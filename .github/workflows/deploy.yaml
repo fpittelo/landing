@@ -175,6 +175,16 @@ jobs:
             -var-file="${ENVIRONMENT}.tfvars"
         working-directory: ./infra  # Update the working directory to the infra folder
 
+      - name: Run Terraform Import
+        env:
+          SUBSCRIPTION_DEV_ID: ${{ secrets.AZURE_SUBSCRIPTION_DEV_ID }}
+          SUBSCRIPTION_QA_ID: ${{ secrets.AZURE_SUBSCRIPTION_QA_ID }}
+          SUBSCRIPTION_MAIN_ID: ${{ secrets.AZURE_SUBSCRIPTION_MAIN_ID }}
+        run: |
+          chmod +x ./import.sh
+          ./import.sh
+        working-directory: ./infra
+
       - name: Terraform Apply
         env:
           ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}

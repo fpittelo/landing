@@ -51,3 +51,23 @@ variable "az_location" {
   description = "value of resource group location"
   type = string
 }
+
+variable "root_management_group_id" {
+  type    = string
+  default = "4c8896b7-52b2-4cb4-9533-1dc0c937e1ed"  # Replace with your actual Root ID if different
+}
+
+variable "subscription_dev_id" {
+  description = "The subscription ID for the DEV environment."
+  type        = string
+}
+
+variable "subscription_qa_id" {
+  description = "The subscription ID for the QA environment."
+  type        = string
+}
+
+variable "subscription_main_id" {
+  description = "The subscription ID for the MAIN environment."
+  type        = string
+}

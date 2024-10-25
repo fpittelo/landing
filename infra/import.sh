@@ -40,7 +40,7 @@ declare -A resources=(
 for resource in "${!resources[@]}"; do
   if ! terraform state list "$resource" &>/dev/null; then
     echo "Importing resource $resource..."
-    terraform import -input=false -var-file="${VAR_FILE}" "$resource" "${resources[$resource]}"
+    terraform import -input=false "$resource" "${resources[$resource]}"
   else
     echo "Resource $resource is already managed. Skipping import."
   fi

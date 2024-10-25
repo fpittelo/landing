@@ -177,6 +177,10 @@ jobs:
 
       - name: Run Terraform Import
         env:
+          ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+          ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+          ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+          ARM_USE_OIDC: true
           SUBSCRIPTION_DEV_ID: ${{ secrets.AZURE_SUBSCRIPTION_DEV_ID }}
           SUBSCRIPTION_QA_ID: ${{ secrets.AZURE_SUBSCRIPTION_QA_ID }}
           SUBSCRIPTION_MAIN_ID: ${{ secrets.AZURE_SUBSCRIPTION_MAIN_ID }}

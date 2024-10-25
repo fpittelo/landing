@@ -27,32 +27,42 @@ VAR_FILE="${ENVIRONMENT}.tfvars"
 terraform init -input=false
 
 # Declare an associative array of resources to import
-declare -A resources=(
-  ["module.mg_acme.azurerm_management_group.this"]="FPITTELO"
-  ["module.mg_opr.azurerm_management_group.this"]="OPR"
-  ["module.mg_dev.azurerm_management_group.this"]="dev"
-  ["module.mg_qa.azurerm_management_group.this"]="qa"
-  ["module.mg_main.azurerm_management_group.this"]="prod"
-  ["module.mg_mgt.azurerm_management_group.this"]="MGT"
-)
+declare -A resources
 
-# Loop through each resource
+# Add common management groups
+resources["module.mg_acme.azurerm_management_group.this"]="FPITTELO"
+resources["module.mg_opr.azurerm_management_group.this"]="OPR"
+resources["module.mg_mgt.azurerm_management_group.this"]="MGT"
+
+# Add environment-specific management groups
+case "$ENVIRONMENT" in
+  dev)
+    resources["module.mg_dev.azurerm_management_group.this"]="dev"
+    subscriptions["azurerm_management_group_subscription_association.dev"]="/providers/Microsoft.Management/managementGroups/dev/providers/Microsoft.Management/managementGroupSubscriptions/${SUBSCRIPTION_DEV_ID}"
+    ;;
+  qa)
+    resources["module.mg_qa.azurerm_management_group.this"]="qa"
+    subscriptions["azurerm_management_group_subscription_association.qa"]="/providers/Microsoft.Management/managementGroups/qa/providers/Microsoft.Management/managementGroupSubscriptions/${SUBSCRIPTION_QA_ID}"
+    ;;
+  main)
+    resources["module.mg_main.azurerm_management_group.this"]="prod"
+    subscriptions["azurerm_management_group_subscription_association.main"]="/providers/Microsoft.Management/managementGroups/prod/providers/Microsoft.Management/managementGroupSubscriptions/${SUBSCRIPTION_MAIN_ID}"
+    ;;
+esac
+
+# Loop through each management group resource
 for resource in "${!resources[@]}"; do
   if ! terraform state list "$resource" &>/dev/null; then
     echo "Importing resource $resource..."
-    terraform import -input=false -var-file="${VAR_FILE}" "$resource" "${resources[$resource]}"
+    mg_name="${resources[$resource]}"
+    mg_id="/providers/Microsoft.Management/managementGroups/${mg_name}"
+    terraform import -input=false -var-file="${VAR_FILE}" "$resource" "$mg_id"
   else
     echo "Resource $resource is already managed. Skipping import."
   fi
 done
 
-# For subscription associations
-declare -A subscriptions=(
-  ["azurerm_management_group_subscription_association.dev"]="/providers/Microsoft.Management/managementGroups/dev/providers/Microsoft.Management/managementGroupSubscriptions/${SUBSCRIPTION_DEV_ID}"
-  ["azurerm_management_group_subscription_association.qa"]="/providers/Microsoft.Management/managementGroups/qa/providers/Microsoft.Management/managementGroupSubscriptions/${SUBSCRIPTION_QA_ID}"
-  ["azurerm_management_group_subscription_association.main"]="/providers/Microsoft.Management/managementGroups/prod/providers/Microsoft.Management/managementGroupSubscriptions/${SUBSCRIPTION_MAIN_ID}"
-)
-
+# Loop through each subscription association
 for assoc in "${!subscriptions[@]}"; do
   if ! terraform state list "$assoc" &>/dev/null; then
     echo "Importing subscription association $assoc..."

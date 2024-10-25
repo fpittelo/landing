@@ -6,6 +6,10 @@ set -e  # Exit immediately if a command exits with a non-zero status
 ENVIRONMENT="${ENVIRONMENT:-dev}"
 PROJECT_NAME="${PROJECT_NAME:-azurelanding}"
 
+# Debug statements
+echo "ENVIRONMENT: $ENVIRONMENT"
+echo "PROJECT_NAME: $PROJECT_NAME"
+
 # Compute backend resource names
 az_backend_rg_name="${ENVIRONMENT}-bkd-${PROJECT_NAME}"
 az_backend_sa_name="${ENVIRONMENT}bkd${PROJECT_NAME}sa"
@@ -26,15 +30,16 @@ VAR_FILE="${ENVIRONMENT}.tfvars"
 # Initialize Terraform (required to use state commands)
 terraform init -input=false
 
-# Declare an associative array of resources to import
+# Declare associative arrays
 declare -A resources
+declare -A subscriptions
 
 # Add common management groups
 resources["module.mg_acme.azurerm_management_group.this"]="FPITTELO"
 resources["module.mg_opr.azurerm_management_group.this"]="OPR"
 resources["module.mg_mgt.azurerm_management_group.this"]="MGT"
 
-# Add environment-specific management groups
+# Add environment-specific management groups and subscriptions
 case "$ENVIRONMENT" in
   dev)
     resources["module.mg_dev.azurerm_management_group.this"]="dev"
